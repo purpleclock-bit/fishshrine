@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>FISH</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
+      color: white;
+      font-family: monospace;
+    }
+
+    /* Display GIF naturally, no container rotation */
+    #fish-bg-img {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: auto;       
+      height: auto;
+      max-width: 100vw;
+      max-height: 100vh;
+      transform: translate(-50%, -50%);
+      opacity: 0.3;
+      pointer-events: none;
+      z-index: -1;
+    }
+
+    #timer {
+      position: fixed;
+      top: 10px; left: 10px;
+      font-size: 18px;
+      text-shadow: 0 0 5px black;
+    }
+
+    #viewerCount {
+      position: fixed;
+      bottom: 10px; left: 10px;
+      font-size: 18px;
+      text-shadow: 0 0 5px black;
+    }
+
+    /* Invisible overlay to capture first click for audio autoplay */
+    #clickToStart {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 9999;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<!-- GIF displays naturally -->
+<img id="fish-bg-img" src="https://media1.tenor.com/m/R5IECfIf34YAAAAd/fish-spinning.gif" />
+
+<div id="timer">Time Watched: 0s</div>
+<div id="viewerCount">Viewers Online: 1</div>
+
+<!-- Invisible overlay for first click to start music -->
+<div id="clickToStart"></div>
+
+<!-- Audio -->
+<audio id="music" loop muted>
+  <source src="https://files.catbox.moe/g7mtz8.mp3" type="audio/mpeg" />
+</audio>
+
+<script>
+  // ---- TIME WATCHED TRACKER ----
+  let startTime = Date.now();
+  let savedTime = parseInt(localStorage.getItem('fish_time_watched') || '0');
+
+  setInterval(() => {
+    let totalSeconds = savedTime + Math.floor((Date.now() - startTime) / 1000);
+    localStorage.setItem('fish_time_watched', totalSeconds);
+    document.getElementById('timer').innerText = "Time Watched: " + formatTime(totalSeconds);
+  }, 1000);
+
+  function formatTime(seconds) {
+    let years = Math.floor(seconds / (60*60*24*365));
+    seconds %= (60*60*24*365);
+    let months = Math.floor(seconds / (60*60*24*30));
+    seconds %= (60*60*24*30);
+    let days = Math.floor(seconds / (60*60*24));
+    seconds %= (60*60*24);
+    let hours = Math.floor(seconds / 3600);
+    seconds %= 3600;
+    let minutes = Math.floor(seconds / 60);
+    seconds %= 60;
+    return `${years}y ${months}m ${days}d ${hours}h ${minutes}m ${seconds}s`;
+  }
+
+  // ---- Audio autoplay fix for Chrome ----
+  const music = document.getElementById("music");
+  const overlay = document.getElementById("clickToStart");
+
+  const startMusic = () => {
+    music.play();
+    music.muted = false; // unmute after first click
+    overlay.remove(); // remove overlay immediately
+  };
+
+  overlay.addEventListener('click', startMusic);
+  overlay.addEventListener('touchstart', startMusic);
+
+  // ---- LIVE VIEWER COUNT (Firebase) ----
+  const firebaseConfig = {
+  apiKey: "AIzaSyCMYGu7EGLZikZPMB6-dgWJ1aNZTpdPxco",
+  authDomain: "fish-viewer-counter.firebaseapp.com",
+  databaseURL: "https://fish-viewer-counter-default-rtdb.firebaseio.com",
+  projectId: "fish-viewer-counter",
+  storageBucket: "fish-viewer-counter.firebasestorage.app",
+  messagingSenderId: "553844181089",
+  appId: "1:553844181089:web:c47af8c73d5e41987a0220",
+  };
+  firebase.initializeApp(firebaseConfig);
+
+  const db = firebase.database();
+  const myRef = db.ref("viewers/").push(true);
+  myRef.onDisconnect().remove();
+
+  db.ref("viewers/").on("value", snapshot => {
+    document.getElementById("viewerCount").innerText = "Viewers Online: " + snapshot.numChildren();
+  });
+</script>
+
+<!-- Firebase Imports -->
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-database.js"></script>
+
+</body>
+</html>
