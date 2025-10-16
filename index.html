@@ -64,6 +64,41 @@
 <!-- Invisible overlay for first click to start music -->
 <div id="clickToStart"></div>
 
+<!-- New Start Screen -->
+<div class="start-screen" id="startScreen">
+  <div class="start-message" onclick="startGame()">Click to Start</div>
+</div>
+
+<style>
+.start-screen {
+  position: fixed; /* Cover the entire viewport */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8); /* Semi-transparent black */
+  display: flex; /* Center items */
+  align-items: center; /* Center vertically */
+  justify-content: center; /* Center horizontally */
+  z-index: 9999; /* Ensure it’s on top of other content */
+}
+
+.start-message {
+  color: white; /* White text color */
+  font-size: 30px; /* Font size */
+  cursor: pointer; /* Pointer cursor on hover */
+}
+</style>
+
+<script>
+function startGame() {
+  // Hide the start screen
+  document.getElementById('startScreen').style.display = 'none';
+  
+  // Add any other game initialization logic here
+}
+</script>
+
 <!-- Audio -->
 <audio id="music" loop muted>
   <source src="https://files.catbox.moe/g7mtz8.mp3" type="audio/mpeg" />
